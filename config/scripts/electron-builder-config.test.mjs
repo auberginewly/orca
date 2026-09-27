@@ -1,5 +1,6 @@
+import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { chmod, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -453,13 +454,31 @@ describe('arch-aware packaging guard', () => {
     scratch = await mkdtemp(join(tmpdir(), 'orca-electron-builder-guard-'))
     bundleDir = join(scratch, 'mobile-web')
     await writeMobileWebBundleFixtureTree({ outDir: bundleDir })
+    const { cliRuntimeTarget, cliRuntimeFilename } = require('../bundled-cli-runtime.cjs')
+    for (const platform of ['darwin', 'linux', 'win32']) {
+      for (const arch of ['x64', 'arm64']) {
+        const directory = join(scratch, 'out', 'cli-runtime', `${platform}-${arch}`)
+        await mkdir(directory, { recursive: true })
+        await writeFile(join(directory, cliRuntimeFilename(platform)), 'runtime fixture')
+        await writeFile(
+          join(directory, 'runtime.json'),
+          JSON.stringify({
+            target: cliRuntimeTarget(platform, arch),
+            sha256: createHash('sha256').update('runtime fixture').digest('hex')
+          })
+        )
+      }
+    }
   })
   afterAll(async () => {
     await rm(scratch, { recursive: true, force: true })
   })
 
   const packHost = (arch) =>
-    electronBuilderConfig.beforePack({ electronPlatformName: process.platform, arch }, bundleDir)
+    electronBuilderConfig.beforePack(
+      { electronPlatformName: process.platform, arch, packager: { projectDir: scratch } },
+      bundleDir
+    )
 
   it('allows packaging the host platform and architecture', () => {
     expect(() => packHost(HOST_ARCH)).not.toThrow()
@@ -487,7 +506,10 @@ describe('arch-aware packaging guard', () => {
       (resource) => resource.to === join('node_modules', '@vscode', 'windows-process-tree')
     )
     const packWindows = () =>
-      electronBuilderConfig.beforePack({ electronPlatformName: 'win32', arch: 1 }, bundleDir)
+      electronBuilderConfig.beforePack(
+        { electronPlatformName: 'win32', arch: 1, packager: { projectDir: scratch } },
+        bundleDir
+      )
     if (process.platform === 'win32' || windowsAddon) {
       expect(packWindows).not.toThrow()
     } else {

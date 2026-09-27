@@ -644,6 +644,22 @@ describe('launchOrcaApp', () => {
     delete process.env.ORCA_APP_EXECUTABLE_NEEDS_APP_ROOT
   })
 
+  it.runIf(process.platform === 'darwin')('opens the app bundle from a packaged Bun CLI', () => {
+    process.env.ORCA_APP_EXECUTABLE = '/Applications/Orca.app/Contents/MacOS/Orca'
+    process.env.ORCA_PACKAGED_CLI = '1'
+    spawnMock.mockReturnValue(new FakeChildProcess())
+    try {
+      launchOrcaApp()
+      expect(spawnMock).toHaveBeenCalledWith(
+        'open',
+        ['/Applications/Orca.app'],
+        expect.objectContaining({ detached: true })
+      )
+    } finally {
+      delete process.env.ORCA_PACKAGED_CLI
+    }
+  })
+
   it('handles asynchronous detached spawn errors without throwing', async () => {
     process.env.ORCA_APP_EXECUTABLE = '/missing/Orca'
     const child = new FakeChildProcess()
