@@ -238,6 +238,7 @@ describe('WslHookRelayManager', () => {
       readBundle: () => Buffer.from('// bundle'),
       listDistros: async () => ['Ubuntu'],
       isDistroRunning: vi.fn(async () => true),
+      prepareRuntime: vi.fn(async () => '/home/test/bun'),
       spawnRelay: vi.fn(() => fakeChild()),
       runInstall: vi.fn(async () => ({ code: 0, stderr: '' })),
       waitForSentinel: vi.fn(async () => guestTransport()),
@@ -473,12 +474,43 @@ describe('WslHookRelayManager', () => {
     manager.disposeAll()
   })
 
-  it('gives up without installing when the guest has no node (43)', async () => {
+  it('does not launch or install when Bun provisioning fails', async () => {
+    const { manager, deps } = createManager({
+      prepareRuntime: vi.fn().mockRejectedValue(new Error('runtime download failed'))
+    })
+    manager.ensureForDistro('Ubuntu')
+    await vi.waitFor(() =>
+      expect(deps.warn).toHaveBeenCalledWith(expect.stringContaining('runtime download failed'))
+    )
+    expect(deps.spawnRelay).not.toHaveBeenCalled()
+    expect(deps.runInstall).not.toHaveBeenCalled()
+    manager.disposeAll()
+  })
+
+  it('does not launch after disposal while Bun is being prepared', async () => {
+    let complete: (runtime: string) => void = () => {}
+    const prepareRuntime = vi.fn(
+      () =>
+        new Promise<string>((resolve) => {
+          complete = resolve
+        })
+    )
+    const { manager, deps } = createManager({ prepareRuntime })
+    manager.ensureForDistro('Ubuntu')
+    await vi.waitFor(() => expect(prepareRuntime).toHaveBeenCalledOnce())
+    manager.disposeAll()
+    complete('/home/test/bun')
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(deps.spawnRelay).not.toHaveBeenCalled()
+    expect(deps.runInstall).not.toHaveBeenCalled()
+  })
+
+  it('gives up without installing when the guest runtime is unavailable (43)', async () => {
     const waitForSentinel = vi.fn().mockRejectedValue(startupError(43))
     const { manager, deps } = createManager({ waitForSentinel })
     manager.ensureForDistro('Ubuntu')
     await vi.waitFor(() =>
-      expect(deps.warn).toHaveBeenCalledWith(expect.stringContaining('no node'))
+      expect(deps.warn).toHaveBeenCalledWith(expect.stringContaining('bundled runtime unavailable'))
     )
     expect(deps.runInstall).not.toHaveBeenCalled()
     // Cooldown: an immediate re-ensure must not spawn again.

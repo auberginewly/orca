@@ -29,5 +29,7 @@ run([
   'config/vitest.config.ts',
   'src/relay/bun-relay-artifact.integration.test.ts',
   'src/main/ssh/ssh-relay-bun-runtime-commands.test.ts',
-  'src/main/native-chat/wsl-transcript-bun.integration.test.ts'
+  'src/main/native-chat/wsl-transcript-bun.integration.test.ts',
+  'src/main/browser/wsl-browser-network-bun.integration.test.ts',
+  'src/main/agent-hooks/wsl-hook-relay-live.integration.test.ts'
 ])
