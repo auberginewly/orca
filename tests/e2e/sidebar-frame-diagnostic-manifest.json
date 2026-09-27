@@ -1,0 +1,136 @@
+{
+  "productCommit": "a9deac1f890f196826f1d215fb630141c9709d95",
+  "purpose": "hidden vs mapped sidebar frame-delivery diagnostic; gates and thresholds unchanged",
+  "gatesUnchanged": {
+    "initialDelayMs": 200,
+    "maxFrameGapMs": 200,
+    "longestPauseMs": 200,
+    "landingProofMs": 350,
+    "churnArrivalMs": 1700,
+    "renameMaxStepRule": "max sampled step < finalTop / 2 (unchanged)"
+  },
+  "timersAreDiagnosticOnly": true,
+  "presentationGuard": {
+    "flag": "ORCA_E2E_SIDEBAR_MOTION_XVFB",
+    "requires": [
+      "linux",
+      "GITHUB_ACTIONS=true",
+      "RUNNER_ENVIRONMENT=github-hosted",
+      "nonempty DISPLAY"
+    ],
+    "failClosed": true,
+    "call": "window.showInactive() only; no show/bringToFront/moveTop/app.focus",
+    "backgroundLaunchRetained": "ORCA_BACKGROUND_LAUNCH=1",
+    "terminalFlagUntouched": "ORCA_E2E_TERMINAL_PERF_XVFB is never set by this workflow"
+  },
+  "cases": [
+    {
+      "case": "01",
+      "arm": "hidden",
+      "spec": "tests/e2e/sidebar-reveal-continuity.spec.ts",
+      "title": "native reveal continuity: up",
+      "trace": true
+    },
+    {
+      "case": "02",
+      "arm": "mapped",
+      "spec": "tests/e2e/sidebar-reveal-continuity.spec.ts",
+      "title": "native reveal continuity: up",
+      "trace": true
+    },
+    {
+      "case": "03",
+      "arm": "mapped",
+      "spec": "tests/e2e/sidebar-reveal-continuity.spec.ts",
+      "title": "native reveal continuity: up",
+      "trace": false
+    },
+    {
+      "case": "04",
+      "arm": "hidden",
+      "spec": "tests/e2e/sidebar-reveal-continuity.spec.ts",
+      "title": "native reveal continuity: up",
+      "trace": false
+    },
+    {
+      "case": "05",
+      "arm": "hidden",
+      "spec": "tests/e2e/sidebar-lineage-scroll-regressions.spec.ts",
+      "title": "smooth worktree reveal child 150 after 0ms idle keeps the inactive descendant mounted until its title lands",
+      "trace": false
+    },
+    {
+      "case": "06",
+      "arm": "mapped",
+      "spec": "tests/e2e/sidebar-lineage-scroll-regressions.spec.ts",
+      "title": "smooth worktree reveal child 150 after 0ms idle keeps the inactive descendant mounted until its title lands",
+      "trace": false
+    },
+    {
+      "case": "07",
+      "arm": "mapped",
+      "spec": "tests/e2e/sidebar-rename-readiness.spec.ts",
+      "title": "untyped distant rename keeps native motion after early focus",
+      "trace": true
+    },
+    {
+      "case": "08",
+      "arm": "hidden",
+      "spec": "tests/e2e/sidebar-rename-readiness.spec.ts",
+      "title": "untyped distant rename keeps native motion after early focus",
+      "trace": true
+    },
+    {
+      "case": "09",
+      "arm": "hidden",
+      "spec": "tests/e2e/sidebar-capture-stall-controls.spec.ts",
+      "title": "stationary event-loop control",
+      "trace": false
+    },
+    {
+      "case": "10",
+      "arm": "mapped",
+      "spec": "tests/e2e/sidebar-capture-stall-controls.spec.ts",
+      "title": "stationary event-loop control",
+      "trace": false
+    },
+    {
+      "case": "11",
+      "arm": "mapped",
+      "spec": "tests/e2e/sidebar-capture-stall-controls.spec.ts",
+      "title": "moving event-loop control",
+      "trace": false
+    },
+    {
+      "case": "12",
+      "arm": "hidden",
+      "spec": "tests/e2e/sidebar-capture-stall-controls.spec.ts",
+      "title": "moving event-loop control",
+      "trace": false
+    }
+  ],
+  "traceCategories": [
+    "viz",
+    "cc",
+    "toplevel",
+    "blink.user_timing"
+  ],
+  "traceClockMapping": "performance.mark orca-sidebar-frame-capture-start/-end plus recorded performance.timeOrigin, Date.now, and process.hrtime",
+  "files": {
+    ".github/scripts/sidebar-frame-diagnostic-cases.sh": "e6a3973a84d9ad2086d6c32096e05b1e764988a4409dac63b0593ab564287373",
+    ".github/scripts/sidebar-frame-trace-reduce.mjs": "ed0ef665b39b747510e21e41f15bf9aa85dc302445a01bad0bbd78a57f19fc05",
+    ".github/workflows/e2e.yml": "8dbef0b20207dbbc1ade16010734ad43f818cdf265252ef9026aeee0ce1b610f",
+    "tests/e2e/isolated-display-presentation.ts": "ef946b1d065db813b7eb9fcf096d2917df374b249f9c97e4a6ddfb7e18962233",
+    "tests/e2e/sidebar-animation-fixture.ts": "e127f2336abd4ea90dc00691072fde12a4ec12d3a56c70e402f077b729406a67",
+    "tests/e2e/sidebar-capture-stall-controls.spec.ts": "f071573f0a976f1ca4f5c96618e0afedfa4d8ad542539a1e32f7755fccb80734",
+    "tests/e2e/sidebar-motion-presentation.ts": "f0eaad5812fbb06527b089d8b46750aa05ec520566a27f64cb63428171e74bec",
+    "tests/e2e/sidebar-motion-presentation.unit.test.ts": "5a2decc0bb148d624f4c2d5f830295ac1071a8ab21bb7350502d1b10f95d9a0d",
+    "tests/e2e/sidebar-reveal-continuity.spec.ts": "cc017bc86656420691957e7b5423f52e1aa3b41acbe285fdc715126712299c0b",
+    "tests/e2e/terminal-perf-presentation.ts": "fd909fb95603851ad672efb46ca08e866c66125b326dc3352b9f421e5f37542d"
+  },
+  "productBlobs": {
+    "tests/e2e/sidebar-animation-fixture.ts": "cfbf15760d7ac3e2dcdd6aca8cb9c3922d220f46",
+    "tests/e2e/sidebar-reveal-continuity.spec.ts": "2f6abbd97ea86a3b408911df90dc8fedb6b3d799",
+    "tests/e2e/terminal-perf-presentation.ts": "3cb64a0666aabd3944c222171c71985a3754cede"
+  }
+}
